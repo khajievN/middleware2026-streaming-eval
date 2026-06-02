@@ -166,10 +166,17 @@ def _run_workload_child(sock, workload: str, write_fd: int) -> None:
             "seconds": round(time.monotonic() - started, 6),
             **extra,
         }
+    except MemoryError:
+        # No swap, RAM-backed FS: an allocation failure IS the OOM signal here,
+        # and it surfaces as MemoryError rather than a kernel SIGKILL.
+        result = {"status": "oom", "workload": workload, "note": "MemoryError"}
     except Exception as exc:  # report, don't crash the measurement
         result = {"status": "error", "workload": workload, "error": str(exc)}
-    os.write(write_fd, json.dumps(result).encode("utf-8"))
-    os.close(write_fd)
+    try:
+        os.write(write_fd, json.dumps(result).encode("utf-8"))
+        os.close(write_fd)
+    except OSError:
+        pass
     os._exit(0)
 
 

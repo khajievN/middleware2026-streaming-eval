@@ -222,20 +222,28 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=framing.VSOCK_BENCH_PORT)
     args = parser.parse_args()
 
-    listener = framing.open_listener(args.transport, args.port)
-    logger.info("listening transport=%s port=%d", args.transport, args.port)
-    while True:
-        conn, addr = listener.accept()
-        logger.info("connection from %s", addr)
-        try:
-            handle_connection(conn)
-        except Exception as exc:
-            logger.error("connection error: %s", exc)
-        finally:
+    try:
+        listener = framing.open_listener(args.transport, args.port)
+        logger.info("listening transport=%s port=%d", args.transport, args.port)
+        while True:
+            conn, addr = listener.accept()
+            logger.info("connection from %s", addr)
             try:
-                conn.close()
-            except OSError:
-                pass
+                handle_connection(conn)
+            except Exception as exc:
+                logger.error("connection error: %s", exc)
+            finally:
+                try:
+                    conn.close()
+                except OSError:
+                    pass
+    except Exception:
+        # A crash here would terminate the enclave before `nitro-cli console`
+        # can attach; hold the process so the traceback stays observable.
+        logger.exception("FATAL: bench server crashed during startup/run")
+        sys.stdout.flush()
+        time.sleep(60)
+        raise
 
 
 if __name__ == "__main__":

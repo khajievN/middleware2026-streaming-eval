@@ -29,8 +29,9 @@ VSOCK_BENCH_PORT = 5006  # adjacent to the production enclave's 5005
 def open_listener(transport: str, port: int) -> socket.socket:
     """Bind a listening socket on the enclave side (vsock) or a host (tcp)."""
     if transport == "vsock":
+        # AF_VSOCK rejects SO_REUSEADDR on the enclave kernel (raises before
+        # listen); the production enclave server binds without it, so we match.
         sock = socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.bind((socket.VMADDR_CID_ANY, port))
     else:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

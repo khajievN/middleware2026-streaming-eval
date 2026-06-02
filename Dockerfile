@@ -1,12 +1,14 @@
-# Minimal enclave image for the streaming/OOM benchmark.
-# Deliberately excludes the KMS/NSM attestation stack: this experiment measures
-# the VSock transport and the enclave memory model, not the crypto path, so a
-# lean image keeps the measurement free of attestation-side confounds.
-FROM python:3.11-slim
+# Enclave bench image. Built on amazonlinux:2 to match the proven production
+# enclave runtime (epsilon-enclave): minimal Debian images (python:slim) fail to
+# boot as a Nitro enclave on this host. Stdlib only — no third-party deps, so no
+# pip and no import-time failure modes inside the restricted enclave.
+FROM amazonlinux:2
 
-# No third-party deps: the workloads use only the standard library, which keeps
-# the enclave image minimal and removes import-time failure modes in the
-# restricted enclave environment.
+RUN amazon-linux-extras install python3.8 -y && \
+    yum install -y python38 && \
+    yum clean all && \
+    alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
+
 WORKDIR /app
 COPY framing.py enclave_bench.py /app/
 

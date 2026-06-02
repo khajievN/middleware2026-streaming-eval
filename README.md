@@ -38,11 +38,17 @@ produces two figures from **live measurements** on a single AWS Nitro enclave:
 
 ## Run order
 
+`make` is not installed on a stock Amazon Linux host: `sudo yum install -y make`
+(or `sudo dnf install -y make`) first, or run the raw commands the targets wrap.
+`run-enclave` terminates ALL running enclaves — including a live `epsilon-enclave`,
+since a c5a.xlarge has room for only one 2-vCPU enclave at a time.
+
 ```bash
 # 0. (optional) validate the protocol + workloads with no Nitro, over TCP:
 make smoke
 
-# 1. one-time: build the ~10 GB synthetic CSV (set DEMO_LABEVENTS if needed)
+# 1a. fetch the open-access demo labevents (no credentialing), then scale to ~10 GB
+make fetch-data
 make scale TARGET_GB=10
 
 # 2. build the bench enclave image + EIF

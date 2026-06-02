@@ -9,10 +9,16 @@
 #   make plot             # render both figures from results/*.json
 
 # --- paths ---
-DEMO_LABEVENTS ?= $(HOME)/Developments/WebStorm/phd_milestone/datasets/mimic-iv-clinical-database-demo-2.2/hosp/labevents.csv.gz
+# Local demo labevents. On EC2, `make fetch-data` downloads it here from the
+# open-access PhysioNet MIMIC-IV demo (no credentialing).
+DEMO_LABEVENTS ?= data/labevents.csv.gz
+DEMO_URL       ?= https://physionet.org/files/mimic-iv-demo/2.2/hosp/labevents.csv.gz
 SCALED_CSV     ?= data/labevents_scaled.csv
 TARGET_GB      ?= 10
 RESULTS        ?= results
+
+# nitro-cli and docker need root on a stock Amazon Linux Nitro host.
+SUDO       ?= sudo
 
 # --- enclave params (c5a.xlarge: 4 vCPU total -> 2 to parent, 2 to enclave) ---
 IMAGE      ?= mw-stream-bench
@@ -26,20 +32,25 @@ INSTANCE   ?= c5a.xlarge
 TRANSPORT  ?= vsock
 PORT       ?= 5006
 
+fetch-data:
+	mkdir -p data
+	curl -L --fail -o $(DEMO_LABEVENTS) "$(DEMO_URL)"
+
 scale:
 	python3 scale_mimic.py --source $(DEMO_LABEVENTS) --out $(SCALED_CSV) --target-gb $(TARGET_GB)
 
 image:
-	docker build -t $(IMAGE):latest .
+	$(SUDO) docker build -t $(IMAGE):latest .
 
 eif: image
-	nitro-cli build-enclave --docker-uri $(IMAGE):latest --output-file $(EIF)
+	$(SUDO) nitro-cli build-enclave --docker-uri $(IMAGE):latest --output-file $(EIF)
 
 run-enclave:
-	nitro-cli terminate-enclave --all || true
-	nitro-cli run-enclave --eif-path $(EIF) --memory $(ENCLAVE_MEM) \
+	@echo "WARNING: terminating ALL running enclaves (this stops epsilon-enclave too)."
+	$(SUDO) nitro-cli terminate-enclave --all || true
+	$(SUDO) nitro-cli run-enclave --eif-path $(EIF) --memory $(ENCLAVE_MEM) \
 		--cpu-count $(ENCLAVE_CPUS) --enclave-cid $(ENCLAVE_CID) --debug-mode
-	@echo "console logs: nitro-cli console --enclave-id \$$(nitro-cli describe-enclaves | jq -r '.[0].EnclaveID')"
+	@echo "console logs: $(SUDO) nitro-cli console --enclave-id \$$($(SUDO) nitro-cli describe-enclaves | jq -r '.[0].EnclaveID')"
 
 throughput:
 	python3 parent_driver.py --transport $(TRANSPORT) --cid $(ENCLAVE_CID) --port $(PORT) \
@@ -65,7 +76,7 @@ smoke:
 	kill `cat .smoke.pid` && rm -f .smoke.pid
 
 clean:
-	nitro-cli terminate-enclave --all || true
+	$(SUDO) nitro-cli terminate-enclave --all || true
 	rm -f $(EIF) .smoke.pid
 
-.PHONY: scale image eif run-enclave throughput oom plot smoke clean
+.PHONY: fetch-data scale image eif run-enclave throughput oom plot smoke clean

@@ -1,0 +1,19 @@
+{
+  "experiment": "throughput",
+  "total_bytes": 2147483648,
+  "records": [
+    {"chunk_size_bytes": 4096, "trials": 5, "mbps_median": 155.039, "mbps_min": 122.024, "mbps_max": 174.183, "mbps_samples": [174.183, 164.548, 153.68, 155.039, 122.024]},
+    {"chunk_size_bytes": 16384, "trials": 5, "mbps_median": 386.994, "mbps_min": 382.178, "mbps_max": 414.768, "mbps_samples": [382.178, 386.994, 386.415, 414.768, 412.826]},
+    {"chunk_size_bytes": 65536, "trials": 5, "mbps_median": 730.142, "mbps_min": 726.602, "mbps_max": 748.247, "mbps_samples": [726.602, 748.247, 730.142, 727.722, 734.952]},
+    {"chunk_size_bytes": 262144, "trials": 5, "mbps_median": 837.487, "mbps_min": 830.389, "mbps_max": 839.298, "mbps_samples": [839.298, 831.684, 838.527, 830.389, 837.487]},
+    {"chunk_size_bytes": 1048576, "trials": 5, "mbps_median": 753.589, "mbps_min": 749.333, "mbps_max": 769.288, "mbps_samples": [751.591, 749.333, 769.288, 753.589, 756.979]},
+    {"chunk_size_bytes": 4194304, "trials": 5, "mbps_median": 691.554, "mbps_min": 682.243, "mbps_max": 697.58, "mbps_samples": [682.243, 691.554, 691.051, 693.18, 697.58]}
+  ],
+  "meta": {
+    "instance_type": "c5a.xlarge",
+    "enclave_memory_mb": 4096,
+    "enclave_cpus": 2,
+    "transport": "vsock",
+    "utc": "2026-06-02T21:50:58.565597Z"
+  }
+}

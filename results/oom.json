@@ -1,0 +1,40 @@
+{
+  "experiment": "oom",
+  "enclave_memory_mb": 4096,
+  "provenance": "Values transcribed from the live run console; the driver was interrupted (Ctrl-C) during stream_block@2048MB before it flushed the file, so stream_block@2048 is recorded as oom from the observed stall at the 4GB ceiling rather than a clean kill verdict.",
+  "records": [
+    {"workload": "baseline_full", "payload_mb": 50,   "status": "ok",  "peak_rss_mb": 695.30,  "rows": null, "seconds": null},
+    {"workload": "baseline_full", "payload_mb": 100,  "status": "ok",  "peak_rss_mb": 1379.24, "rows": null, "seconds": null},
+    {"workload": "baseline_full", "payload_mb": 200,  "status": "ok",  "peak_rss_mb": 2741.18, "rows": null, "seconds": null},
+    {"workload": "baseline_full", "payload_mb": 247,  "status": "ok",  "peak_rss_mb": 3380.56, "rows": null, "seconds": null},
+    {"workload": "baseline_full", "payload_mb": 300,  "status": "oom", "peak_rss_mb": null,     "rows": null, "seconds": null},
+
+    {"workload": "stream_agg", "payload_mb": 50,    "status": "ok", "peak_rss_mb": 17.04, "rows": null, "seconds": null},
+    {"workload": "stream_agg", "payload_mb": 100,   "status": "ok", "peak_rss_mb": 17.50, "rows": null, "seconds": null},
+    {"workload": "stream_agg", "payload_mb": 200,   "status": "ok", "peak_rss_mb": 16.08, "rows": null, "seconds": null},
+    {"workload": "stream_agg", "payload_mb": 247,   "status": "ok", "peak_rss_mb": 16.47, "rows": null, "seconds": null},
+    {"workload": "stream_agg", "payload_mb": 300,   "status": "ok", "peak_rss_mb": 18.10, "rows": null, "seconds": null},
+    {"workload": "stream_agg", "payload_mb": 500,   "status": "ok", "peak_rss_mb": 17.64, "rows": null, "seconds": null},
+    {"workload": "stream_agg", "payload_mb": 1024,  "status": "ok", "peak_rss_mb": 17.63, "rows": null, "seconds": null},
+    {"workload": "stream_agg", "payload_mb": 2048,  "status": "ok", "peak_rss_mb": 17.86, "rows": null, "seconds": null},
+    {"workload": "stream_agg", "payload_mb": 4096,  "status": "ok", "peak_rss_mb": 18.19, "rows": null, "seconds": null},
+    {"workload": "stream_agg", "payload_mb": 8192,  "status": "ok", "peak_rss_mb": 20.21, "rows": null, "seconds": null},
+    {"workload": "stream_agg", "payload_mb": 10240, "status": "ok", "peak_rss_mb": 20.21, "rows": null, "seconds": null},
+
+    {"workload": "stream_block", "payload_mb": 50,   "status": "ok",  "peak_rss_mb": 116.81,  "rows": null, "seconds": null},
+    {"workload": "stream_block", "payload_mb": 100,  "status": "ok",  "peak_rss_mb": 221.05,  "rows": null, "seconds": null},
+    {"workload": "stream_block", "payload_mb": 200,  "status": "ok",  "peak_rss_mb": 431.62,  "rows": null, "seconds": null},
+    {"workload": "stream_block", "payload_mb": 247,  "status": "ok",  "peak_rss_mb": 531.64,  "rows": null, "seconds": null},
+    {"workload": "stream_block", "payload_mb": 300,  "status": "ok",  "peak_rss_mb": 643.42,  "rows": null, "seconds": null},
+    {"workload": "stream_block", "payload_mb": 500,  "status": "ok",  "peak_rss_mb": 1059.27, "rows": null, "seconds": null},
+    {"workload": "stream_block", "payload_mb": 1024, "status": "ok",  "peak_rss_mb": 2154.28, "rows": null, "seconds": null},
+    {"workload": "stream_block", "payload_mb": 2048, "status": "oom", "peak_rss_mb": null,     "rows": null, "seconds": null, "note": "stalled at 4GB ceiling; run interrupted (no clean kill)"}
+  ],
+  "meta": {
+    "instance_type": "c5a.xlarge",
+    "enclave_memory_mb": 4096,
+    "enclave_cpus": 2,
+    "transport": "vsock",
+    "utc": "2026-06-02T21:55:00Z"
+  }
+}

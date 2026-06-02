@@ -78,6 +78,23 @@ def _run_once(transport: str, cid: int, port: int, control: dict,
         sock.close()
 
 
+def _flush(args, result) -> None:
+    """Write current results to disk with run metadata. Called after every
+    record so an interrupted run (Ctrl-C, OOM, crash) still leaves a valid,
+    partial results file rather than nothing."""
+    out = dict(result)
+    out["meta"] = {
+        "instance_type": args.instance_type,
+        "enclave_memory_mb": args.enclave_memory_mb,
+        "enclave_cpus": args.enclave_cpus,
+        "transport": args.transport,
+        "utc": datetime.datetime.utcnow().isoformat() + "Z",
+    }
+    os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
+    with open(args.out, "w") as fh:
+        json.dump(out, fh, indent=2)
+
+
 def cmd_throughput(args) -> dict:
     chunk_sizes = [int(c) for c in args.chunk_sizes.split(",")]
     records = []
@@ -103,6 +120,7 @@ def cmd_throughput(args) -> dict:
                 "mbps_samples": [round(s, 3) for s in samples],
             })
         print(f"chunk {chunk_size:>9}B -> {records[-1] if samples else 'no successful trial'}")
+        _flush(args, {"experiment": "throughput", "total_bytes": args.total_bytes, "records": records})
     return {"experiment": "throughput", "total_bytes": args.total_bytes, "records": records}
 
 
@@ -129,6 +147,8 @@ def cmd_oom(args) -> dict:
             records.append(rec)
             print(f"{workload:<14} {size_mb:>6} MB -> {rec['status']} "
                   f"(rss={rec['peak_rss_mb']} MB)")
+            _flush(args, {"experiment": "oom", "enclave_memory_mb": args.enclave_memory_mb,
+                          "records": records})
             if reply.get("status") in ("oom", "killed") and args.stop_on_oom:
                 print(f"  {workload}: OOM at {size_mb} MB; skipping larger sizes")
                 break
@@ -164,16 +184,7 @@ def main() -> None:
 
     args = parser.parse_args()
     result = args.func(args)
-    result["meta"] = {
-        "instance_type": args.instance_type,
-        "enclave_memory_mb": args.enclave_memory_mb,
-        "enclave_cpus": args.enclave_cpus,
-        "transport": args.transport,
-        "utc": datetime.datetime.utcnow().isoformat() + "Z",
-    }
-    os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
-    with open(args.out, "w") as fh:
-        json.dump(result, fh, indent=2)
+    _flush(args, result)  # final authoritative write (records were already flushed incrementally)
     print(f"\nwrote {args.out}")
 
 

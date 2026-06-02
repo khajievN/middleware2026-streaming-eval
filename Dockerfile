@@ -4,8 +4,9 @@
 # lean image keeps the measurement free of attestation-side confounds.
 FROM python:3.11-slim
 
-RUN pip install --no-cache-dir pandas==2.2.2
-
+# No third-party deps: the workloads use only the standard library, which keeps
+# the enclave image minimal and removes import-time failure modes in the
+# restricted enclave environment.
 WORKDIR /app
 COPY framing.py enclave_bench.py /app/
 

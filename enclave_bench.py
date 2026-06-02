@@ -24,6 +24,7 @@ Workloads:
                   global sort (a blocking operator with nowhere to spill).
 """
 import argparse
+import csv
 import io
 import json
 import logging
@@ -32,8 +33,6 @@ import signal
 import sys
 import time
 from typing import Optional
-
-import pandas as pd
 
 import framing
 
@@ -89,7 +88,10 @@ def _iter_rows(sock):
 
 
 def _workload_baseline_full(sock) -> dict:
-    """Production single-payload model: buffer everything, then materialize."""
+    """Production single-payload model: buffer the whole payload, then
+    materialize every row in memory (as a full-frame analytic would). The
+    buffer plus the parsed row list reproduce the multi-x memory bloat that
+    OOM-kills the enclave; no third-party dependency is needed to exhibit it."""
     buf = bytearray()
     while True:
         frame = framing.recv_frame(sock)
@@ -98,9 +100,8 @@ def _workload_baseline_full(sock) -> dict:
         if frame == b"":
             break
         buf.extend(frame)
-    df = pd.read_csv(io.BytesIO(bytes(buf)))
-    _ = df.describe(include="all")  # forces full materialization
-    return {"rows": int(len(df))}
+    rows = list(csv.reader(io.StringIO(buf.decode("utf-8", errors="replace"))))
+    return {"rows": max(0, len(rows) - 1)}  # minus header
 
 
 def _workload_stream_agg(sock) -> dict:
@@ -223,6 +224,8 @@ def main() -> None:
     args = parser.parse_args()
 
     try:
+        logger.info("bench starting transport=%s port=%d", args.transport, args.port)
+        sys.stdout.flush()
         listener = framing.open_listener(args.transport, args.port)
         logger.info("listening transport=%s port=%d", args.transport, args.port)
         while True:

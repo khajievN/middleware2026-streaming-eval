@@ -7,7 +7,8 @@
     {"workload": "baseline_full", "payload_mb": 100,  "status": "ok",  "peak_rss_mb": 1379.24, "rows": null, "seconds": null},
     {"workload": "baseline_full", "payload_mb": 200,  "status": "ok",  "peak_rss_mb": 2741.18, "rows": null, "seconds": null},
     {"workload": "baseline_full", "payload_mb": 247,  "status": "ok",  "peak_rss_mb": 3380.56, "rows": null, "seconds": null},
-    {"workload": "baseline_full", "payload_mb": 300,  "status": "oom", "peak_rss_mb": null,     "rows": null, "seconds": null},
+    {"workload": "baseline_full", "payload_mb": 255,  "status": "ok",  "peak_rss_mb": 3489.43, "rows": null, "seconds": null},
+    {"workload": "baseline_full", "payload_mb": 260,  "status": "oom", "peak_rss_mb": null,     "rows": null, "seconds": null},
 
     {"workload": "stream_agg", "payload_mb": 50,    "status": "ok", "peak_rss_mb": 17.04, "rows": null, "seconds": null},
     {"workload": "stream_agg", "payload_mb": 100,   "status": "ok", "peak_rss_mb": 17.50, "rows": null, "seconds": null},
